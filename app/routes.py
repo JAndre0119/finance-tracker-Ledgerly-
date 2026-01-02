@@ -1,49 +1,59 @@
-from flask import Blueprint, request, jsonify
-from .models import db, Transaction 
+from flask import Blueprint, render_template, request, redirect, url_for
+from datetime import date
+from app import db
+from app.models import Transaction
 
 main = Blueprint("main", __name__)
 
-main = Blueprint("main", __name__)
 
-@main.get("/health")
-def health():
-    return {"status": "ok"}
+@main.route("/")
+def dashboard():
+    transactions = Transaction.query.order_by(
+        Transaction.transaction_date.desc()
+    ).all()
 
-@main.get("/")
-def home():
-    return {"app": "Ledgerly", "message": "Welcome!"}
+    income = sum(t.amount for t in transactions if t.type == "income")
+    expenses = sum(t.amount for t in transactions if t.type == "expense")
+    net = income - expenses
 
-@main.get("/transactions")
-def list_transactions():
-    txs = Transaction.query.order_by(Transaction.date.desc()).all()
-    return jsonify([t.to_dict() for t in txs])
-
-@main.post("/transactions")
-def create_transaction():
-    data = request.get_json(silent=True) or {}
-
-    # minimal validation
-    required = ["amount", "category", "type"]
-    missing = [k for k in required if k not in data]
-    if missing:
-        return {"error": f"Missing fields: {', '.join(missing)}"}, 400
-    
-    tx = Transaction(
-        amount=float(data["amount"]),
-        category=str(data["category"]).strip()
-        type=str(data["type"]).strip().lower() # "income" or "expense"
-        note=str(data.get("note", "")).strip(),
-        date=data.get("date") # optional; can be ISO string if model supports it
+    return render_template(
+        "dashboard.html",
+        transactions=transactions,
+        income=income,
+        expenses=expenses,
+        net=net
     )
 
-    db.session.add(tx)
-    db.session.commit()
-    return tx.to_dict(), 201
 
-@main.delete("/transactions/<int:tx_id>")
-def delete_transaction(tx_id: int):
-    tx = Transaction.query.get_or_404(tx_id)
-    db.session.delete(tx)
+@main.route("/add", methods=["GET", "POST"])
+def add_transaction():
+    if request.method == "POST":
+        amount = float(request.form["amount"])
+        category = request.form["category"]
+        type_ = request.form["type"]
+        note = request.form.get("note")
+
+        transaction = Transaction(
+            amount=amount,
+            category=category,
+            type=type_,
+            note=note,
+            transaction_date=date.today()
+        )
+
+        db.session.add(transaction)
+        db.session.commit()
+
+        return redirect(url_for("main.dashboard"))
+
+    return render_template("add_transaction.html")
+
+@main.route("/delete/<int:transaction_id>", methods=["POST"])
+def delete_transaction(transaction_id):
+    transaction = Transaction.query.get_or_404(transaction_id)
+
+    db.session.delete(transaction)
     db.session.commit()
-    return {"deleted": tx_id}
+
+    return redirect(url_for("main.dashboard"))
 

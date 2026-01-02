@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Add Transaction | Ledgerly</title>
+  </head>
+
+  <body>
+    <h1>Add Transaction</h1>
+
+    <form method="POST" action="{{ url_for('main.add_transaction') }}">
+      <div>
+        <label for="amount">Amount</label><br />
+        <input
+          id="amount"
+          name="amount"
+          type="number"
+          step="0.01"
+          min="0"
+          required
+          placeholder="e.g. 25.99"
+        />
+      </div>
+
+      <br />
+
+      <div>
+        <label for="category">Category</label><br />
+        <input
+          id="category"
+          name="category"
+          type="text"
+          maxlength="50"
+          required
+          placeholder="e.g. Groceries"
+        />
+      </div>
+
+      <br />
+
+      <div>
+        <label for="type">Type</label><br />
+        <select id="type" name="type" required>
+          <option value="" selected disabled>Choose one</option>
+          <option value="income">Income</option>
+          <option value="expense">Expense</option>
+        </select>
+      </div>
+
+      <br />
+
+      <div>
+        <label for="note">Note (optional)</label><br />
+        <input
+          id="note"
+          name="note"
+          type="text"
+          maxlength="200"
+          placeholder="e.g. Costco run"
+        />
+      </div>
+
+      <br />
+
+      <button type="submit">Add</button>
+      <a href="{{ url_for('main.dashboard') }}">Cancel</a>
+    </form>
+  </body>
+</html>
