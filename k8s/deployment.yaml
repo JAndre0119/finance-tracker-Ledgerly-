@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ledgerly-deployment
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: ledgerly
+  template:
+    metadata:
+      labels:
+        app: ledgerly
+    spec:
+      containers:
+      - name: ledgerly
+        image: ledgerly:latest
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 5000
+        envFrom:
+        - secretRef:
+            name: ledgerly-secret
