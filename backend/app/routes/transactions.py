@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from flask_login import login_required, current_user
-from datetime import date
+from datetime import date, datetime
 
 from app.extensions import db
 from app.models import Transaction
@@ -57,12 +57,18 @@ def add_transaction():
     if type_ not in ("income", "expense"):
         return jsonify({"error": "type must be 'income' or 'expense'"}), 400
 
+    date_str = data.get("transaction_date")
+    try:
+        transaction_date = datetime.strptime(date_str, "%Y-%m-%d").date() if date_str else date.today()
+    except ValueError:
+        return jsonify({"error": "transaction_date must be YYYY-MM-DD"}), 400
+
     transaction = Transaction(
         amount=float(amount),
         category=category,
         type=type_,
         note=note,
-        transaction_date=date.today(),
+        transaction_date=transaction_date,
         user_id=current_user.id,
     )
     db.session.add(transaction)

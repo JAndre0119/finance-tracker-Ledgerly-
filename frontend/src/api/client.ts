@@ -42,6 +42,7 @@ export interface NewTransaction {
   category: string
   type: 'income' | 'expense'
   note?: string
+  transaction_date?: string
 }
 
 export const api = {
