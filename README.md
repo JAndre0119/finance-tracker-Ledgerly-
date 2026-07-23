@@ -83,3 +83,33 @@ npm run dev
 ```
 
 Open `http://localhost:5173`. In development, Vite proxies all `/api/*` requests to the Flask server on port 5000.
+
+## Running Tests
+
+The backend test suite uses `pytest`, with fixtures in `backend/tests/conftest.py` that spin up the Flask app against an in-memory SQLite database (no impact on `ledgerly.db`).
+
+```bash
+cd backend
+# with the virtual environment from "Backend" above activated
+pip install -r requirements.txt   # includes pytest and pytest-cov
+pytest
+```
+
+Run with a coverage report:
+
+```bash
+pytest --cov=app --cov-report=term-missing
+```
+
+Test layout:
+
+```
+backend/tests/
+├── conftest.py          # app/db/client fixtures, auth helper fixtures
+├── test_models.py       # unit tests for the User/Transaction models
+├── test_auth.py         # integration tests for /api/auth/*
+└── test_transactions.py # integration tests for /api/transactions,
+                          # including the income/expense/net summary calc
+```
+
+There is currently no update (PUT/PATCH) endpoint for transactions, so the suite covers create, fetch, and delete only.

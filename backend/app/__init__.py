@@ -6,13 +6,16 @@ import os
 from app.extensions import db, login_manager, bcrypt
 
 
-def create_app():
+def create_app(test_config=None):
     load_dotenv()
 
     app = Flask(__name__)
     app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "dev-secret")
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///ledgerly.db"
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
+    if test_config:
+        app.config.update(test_config)
 
     # Allow the Vite dev server to make credentialed requests
     CORS(app, supports_credentials=True, origins=["http://localhost:5173"])
